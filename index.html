@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GE Hospital Plan Comparison</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#070f1d;font-family:'Inter',system-ui,sans-serif;color:#cbd5e1;}
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:#1a2a42;outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;cursor:pointer;}
+  input[type=number]{-moz-appearance:textfield;}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+  .hov{transition:all .15s;cursor:pointer;} .hov:hover{opacity:.82;} .hov:active{transform:scale(.96);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/* ── PREMIUM DATA ages 1-100 ─────────────────────────────────────────────────
+   Columns: newP, oldPEff, oldPCur, newPP, oldPPEff, oldPPCur,
+            newA, oldAEff, oldACur, newB, oldBEff, oldBCur              */
+const DATA = [
+  null,
+  [977.73,1686.23,1256.82,422.92,391.31,381.59,118.81,236.53,214.95,75.21,150.42,147.71],
+  [977.73,1686.23,1256.82,422.92,391.31,376.45,118.81,236.53,214.95,75.21,150.42,147.71],
+  [977.73,1686.23,1244.31,422.92,391.31,371.31,118.81,236.53,214.95,75.21,150.42,147.71],
+  [842.57,1452.97,1244.31,371.69,391.31,368.37,77.39,153.69,151.78,75.21,150.42,126.32],
+  [842.57,1452.97,1203.19,371.69,391.31,362.56,77.39,153.69,150.77,75.21,150.42,124.28],
+  [842.57,1452.97,1195.36,371.69,356.43,356.83,77.39,153.69,149.74,62.13,123.17,123.26],
+  [842.57,1452.97,1187.53,371.69,356.43,351.21,77.39,153.69,147.71,62.13,123.17,101.87],
+  [842.57,1452.97,1147.80,371.69,356.43,330.05,77.39,153.69,146.69,62.13,123.17,100.85],
+  [842.57,1452.97,1102.42,371.69,356.43,324.94,77.39,153.69,144.65,62.13,123.17,99.83],
+  [842.57,1452.97,1060.82,371.69,356.43,323.65,77.39,153.69,143.64,62.13,123.17,99.83],
+  [842.57,1452.97,1009.78,371.69,356.43,306.29,77.39,153.69,142.62,62.13,123.17,98.81],
+  [842.57,1452.97,1015.43,371.69,356.43,306.29,77.39,153.69,141.60,62.13,123.17,97.79],
+  [842.57,1452.97,1017.32,371.69,356.43,306.29,77.39,153.69,139.56,62.13,123.17,97.79],
+  [842.57,1452.97,1017.32,371.69,356.43,306.29,77.39,153.69,139.56,62.13,123.17,97.79],
+  [842.57,1452.97,1017.32,371.69,356.43,306.29,77.39,153.69,140.58,62.13,123.17,97.79],
+  [842.57,1452.97,1024.88,371.69,356.43,306.29,77.39,153.69,140.58,62.13,123.17,97.79],
+  [842.57,1452.97,1024.88,371.69,356.43,308.31,77.39,153.69,140.58,62.13,123.17,97.79],
+  [842.57,1452.97,1024.88,371.69,356.43,312.14,77.39,153.69,142.62,62.13,123.17,98.81],
+  [842.57,1452.97,1024.88,371.69,356.43,314.70,77.39,153.69,143.64,62.13,123.17,99.83],
+  [842.57,1452.97,1024.88,371.69,356.43,318.54,77.39,153.69,144.65,62.13,123.17,100.85],
+  [887.26,1529.27,1130.79,357.52,361.88,321.10,88.29,176.58,146.69,64.31,128.62,101.87],
+  [887.26,1529.27,1132.67,357.52,361.88,321.10,88.29,176.58,147.71,64.31,128.62,101.87],
+  [887.26,1529.27,1136.46,357.52,361.88,321.10,88.29,176.58,148.73,64.31,128.62,102.89],
+  [887.26,1529.27,1136.46,357.52,361.88,322.38,88.29,176.58,149.74,64.31,128.62,103.91],
+  [887.26,1529.27,1136.46,357.52,361.88,322.38,88.29,176.58,150.77,64.31,128.62,103.91],
+  [893.80,1541.26,1136.46,374.96,361.88,327.49,88.29,176.58,154.85,64.31,128.62,106.96],
+  [893.80,1541.26,1140.65,374.96,361.88,336.44,88.29,176.58,159.94,64.31,128.62,110.01],
+  [893.80,1541.26,1142.10,374.96,361.88,345.41,88.29,176.58,165.03,64.31,128.62,114.09],
+  [893.80,1541.26,1143.55,374.96,361.88,355.63,88.29,176.58,171.14,64.31,128.62,117.15],
+  [893.80,1541.26,1151.96,374.96,361.88,362.03,88.29,176.58,176.23,64.31,128.62,122.24],
+  [935.22,1612.11,1160.35,438.18,409.84,370.69,109.00,218.00,182.35,75.21,149.33,125.30],
+  [935.22,1612.11,1177.57,438.18,409.84,379.34,109.00,218.00,188.46,75.21,149.33,130.40],
+  [935.22,1612.11,1193.06,438.18,409.84,389.13,109.00,218.00,196.60,75.21,149.33,135.49],
+  [935.22,1612.11,1210.27,438.18,409.84,400.14,109.00,218.00,206.79,75.21,149.33,141.60],
+  [935.22,1612.11,1225.78,438.18,409.84,409.92,109.00,218.00,214.95,75.21,149.33,147.71],
+  [1034.41,1784.33,1290.80,468.70,494.86,430.42,128.62,256.15,224.11,89.38,177.67,154.85],
+  [1034.41,1784.33,1306.89,468.70,494.86,448.61,128.62,256.15,234.30,89.38,177.67,161.97],
+  [1034.41,1784.33,1324.76,468.70,494.86,466.80,128.62,256.15,235.32,89.38,177.67,161.97],
+  [1034.41,1784.33,1342.64,468.70,494.86,476.00,128.62,256.15,236.33,89.38,177.67,162.99],
+  [1034.41,1784.33,1358.73,468.70,494.86,494.35,128.62,256.15,238.37,89.38,177.67,164.01],
+  [1507.47,2599.65,1793.16,703.05,607.13,510.27,167.86,335.72,280.14,116.63,232.17,193.55],
+  [1507.47,2599.65,1818.20,703.05,607.13,532.28,167.86,335.72,292.36,116.63,232.17,201.70],
+  [1507.47,2599.65,1995.19,703.05,607.13,556.76,167.86,335.72,305.60,116.63,232.17,210.87],
+  [1507.47,2599.65,2023.80,703.05,607.13,580.01,167.86,335.72,318.85,116.63,232.17,220.04],
+  [1507.47,2599.65,2052.40,703.05,607.13,606.93,167.86,335.72,332.09,116.63,232.17,229.21],
+  [1697.13,2925.56,2170.81,827.31,770.63,694.46,210.37,419.65,347.37,144.97,289.94,239.40],
+  [1697.13,2925.56,2170.81,827.31,770.63,713.10,210.37,419.65,364.69,144.97,289.94,251.62],
+  [1697.13,2925.56,2170.81,827.31,770.63,731.75,210.37,419.65,383.03,144.97,289.94,263.85],
+  [1697.13,2925.56,2170.81,827.31,770.63,766.28,210.37,419.65,402.38,144.97,289.94,278.10],
+  [1697.13,2925.56,2170.81,827.31,770.63,768.84,210.37,419.65,405.44,144.97,289.94,280.14],
+  [2334.78,4025.37,2849.65,1297.10,1059.48,844.31,284.49,568.98,445.17,196.20,392.40,306.63],
+  [2334.78,4025.37,2866.68,1297.10,1059.48,890.38,284.49,568.98,469.62,196.20,392.40,323.95],
+  [2334.78,4025.37,2930.98,1297.10,1059.48,944.10,284.49,568.98,501.19,196.20,392.40,345.33],
+  [2334.78,4025.37,3152.20,1297.10,1059.48,999.12,284.49,568.98,533.79,196.20,392.40,368.77],
+  [2334.78,4025.37,3229.74,1297.10,1059.48,1059.24,284.49,568.98,569.45,196.20,392.40,392.19],
+  [3217.68,5548.10,3916.15,1706.94,1420.27,1121.93,393.49,786.98,607.14,271.41,541.73,418.68],
+  [3217.68,5548.10,3942.64,1706.94,1420.27,1188.45,393.49,786.98,646.87,271.41,541.73,446.19],
+  [3217.68,5548.10,3955.86,1706.94,1420.27,1262.63,393.49,786.98,691.69,271.41,541.73,475.73],
+  [3217.68,5548.10,4364.31,1706.94,1420.27,1338.13,393.49,786.98,736.51,271.41,541.73,509.35],
+  [3217.68,5548.10,4528.82,1706.94,1420.27,1420.00,393.49,786.98,787.45,271.41,541.73,541.95],
+  [4532.22,7814.21,5559.37,2225.78,1689.50,1506.97,490.50,981.00,839.40,340.08,680.16,578.62],
+  [4532.22,7814.21,5812.76,2225.78,1689.50,1597.81,490.50,981.00,894.41,340.08,680.16,616.31],
+  [4532.22,7814.21,6066.16,2225.78,1689.50,1689.93,490.50,981.00,950.44,340.08,680.16,655.01],
+  [4993.29,8608.82,6319.54,2401.27,1927.12,1785.87,573.34,1145.59,1011.56,395.67,791.34,696.78],
+  [4993.29,8608.82,6459.45,2401.27,1927.12,1889.48,573.34,1145.59,1074.72,395.67,791.34,740.59],
+  [6035.33,10405.14,7279.31,3009.49,2210.52,1994.38,661.63,1323.26,1139.91,457.80,914.51,785.41],
+  [6035.33,10405.14,7772.20,3009.49,2210.52,2103.12,661.63,1323.26,1207.15,457.80,914.51,831.26],
+  [6035.33,10405.14,8265.11,3009.49,2210.52,2210.57,661.63,1323.26,1275.40,457.80,914.51,879.13],
+  [6530.19,11259.70,8325.83,3321.23,2487.38,2319.32,757.55,1515.10,1345.69,523.20,1046.40,927.01],
+  [6530.19,11259.70,8388.35,3321.23,2487.38,2431.90,757.55,1515.10,1414.96,523.20,1046.40,974.89],
+  [7414.18,12782.43,9152.71,3732.16,2791.49,2545.75,855.65,1710.21,1487.29,590.78,1180.47,1024.81],
+  [7414.18,12782.43,9542.30,3732.16,2791.49,2667.28,855.65,1710.21,1564.71,590.78,1180.47,1078.79],
+  [7414.18,12782.43,9939.82,3732.16,2791.49,2791.37,855.65,1710.21,1642.13,590.78,1180.47,1131.77],
+  [8288.36,14290.99,10426.08,4385.07,3118.49,2912.91,966.83,1933.66,1721.59,665.99,1331.98,1185.76],
+  [8288.36,14290.99,10860.60,4385.07,3118.49,3036.99,966.83,1933.66,1799.01,665.99,1331.98,1239.74],
+  [8769.05,15118.30,10995.45,4963.86,3477.10,3178.99,1066.02,2130.95,1872.36,735.75,1470.41,1290.68],
+  [8769.05,15118.30,11130.32,4963.86,3477.10,3324.83,1066.02,2130.95,1948.76,735.75,1470.41,1342.64],
+  [8769.05,15118.30,11543.53,4963.86,3477.10,3475.78,1066.02,2130.95,2026.18,735.75,1470.41,1395.60],
+  [9268.27,15979.40,11717.60,5749.75,3857.51,3625.46,1171.75,2342.41,2102.58,807.69,1615.38,1448.58],
+  [9268.27,15979.40,12098.53,5749.75,3857.51,3773.85,1171.75,2342.41,2177.96,807.69,1615.38,1500.54],
+  [9789.29,16877.56,12348.21,6246.79,4264.08,3920.97,1274.21,2547.33,2253.35,879.63,1759.26,1552.49],
+  [9789.29,16877.56,12597.89,6246.79,4264.08,4080.88,1274.21,2547.33,2334.85,879.63,1759.26,1608.51],
+  [9789.29,16877.56,12700.43,6246.79,4264.08,4226.71,1274.21,2547.33,2409.21,879.63,1759.26,1659.45],
+  [10091.22,17398.58,12804.66,6691.51,4633.59,4372.56,1386.48,2772.96,2481.54,952.66,1905.32,1709.36],
+  [10091.22,17398.58,13280.32,6691.51,4633.59,4461.63,1386.48,2772.96,2550.81,952.66,1905.32,1757.24],
+  [10845.50,18700.04,13757.67,6888.80,4886.47,4550.70,1469.32,2938.64,2614.99,1008.25,2016.50,1801.05],
+  [10845.50,18700.04,14233.37,6888.80,4886.47,4677.41,1469.32,2938.64,2680.18,1008.25,2016.50,1846.89],
+  [10845.50,18700.04,14581.31,6888.80,4886.47,4800.37,1469.32,2938.64,2743.33,1008.25,2016.50,1887.64],
+  [11715.32,20198.79,14929.23,7167.84,5229.82,4917.06,1472.59,2944.09,2803.44,1064.93,2129.86,1931.44],
+  [11715.32,20198.79,15048.56,7167.84,5229.82,5022.45,1472.59,2944.09,2856.41,1064.93,2129.86,1968.11],
+  [11973.65,20644.60,15164.56,7220.16,5458.72,5115.29,1495.48,2989.87,2905.31,1117.25,2234.50,2001.73],
+  [11973.65,20644.60,15280.52,7220.16,5458.72,5201.87,1495.48,2989.87,2949.11,1117.25,2234.50,2031.27],
+  [11973.65,20644.60,15512.48,7220.16,5458.72,5279.67,1495.48,2989.87,2989.86,1117.25,2234.50,2059.79],
+  [12364.96,21319.31,15741.08,7382.57,5649.47,5351.17,1530.36,3059.63,3027.55,1153.22,2305.35,2085.26],
+  [12364.96,21319.31,15899.08,7382.57,5649.47,5410.15,1530.36,3059.63,3059.13,1153.22,2305.35,2105.64],
+  [12695.23,21888.29,16057.08,7494.84,5768.28,5457.82,1561.97,3122.85,3085.62,1177.20,2353.31,2126.01],
+  [12695.23,21888.29,16215.08,7494.84,5768.28,5497.97,1561.97,3122.85,3108.03,1177.20,2353.31,2140.27],
+  [12695.23,21888.29,16453.77,7494.84,5768.28,5524.32,1561.97,3122.85,3123.31,1177.20,2353.31,2152.50],
+  [13135.59,22648.02,16687.39,7589.67,5871.83,5540.62,1567.42,3134.84,3134.51,1188.10,2375.11,2159.63],
+  [13135.59,22648.02,16924.40,7589.67,5871.83,5642.86,1567.42,3134.84,3134.51,1188.10,2375.11,2159.63],
+];
+
+const PLANS = [
+  {label:"P",  name:"Plan P",       oldName:"Old P Signature", color:"#38bdf8", offset:0},
+  {label:"P'", name:"Plan P Prime", oldName:"Old P Optimum",   color:"#c084fc", offset:3},
+  {label:"A",  name:"Plan A",       oldName:"Old Plan A",      color:"#34d399", offset:6},
+  {label:"B",  name:"Plan B",       oldName:"Old Plan B",      color:"#fbbf24", offset:9},
+];
+
+const SC = ["#60a5fa","#f472b6","#4ade80","#fb923c"];
+const SB = ["rgba(30,58,95,.55)","rgba(74,28,64,.55)","rgba(20,53,42,.55)","rgba(61,37,0,.55)"];
+
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi, isNaN(v)?lo:v));
+const sgd   = v => "S$"+Math.abs(v).toLocaleString("en-SG",{minimumFractionDigits:2,maximumFractionDigits:2});
+const mono  = {fontFamily:"'Roboto Mono',monospace"};
+
+/* ═══════════════════════════ APP ═══════════════════════════════════════════ */
+function App() {
+  const [mode,  setMode]  = React.useState("single");
+  const [slots, setSlots] = React.useState([
+    {plan:0, age:35, from:30, to:65},
+    {plan:2, age:35, from:30, to:65},
+  ]);
+
+  const upd     = (i,k,v) => setSlots(s => s.map((sl,j) => j===i ? {...sl,[k]:v} : sl));
+  const addSlot = () => slots.length < 4 && setSlots(s => [...s, {plan:1, age:40, from:30, to:65}]);
+  const delSlot = (i) => slots.length > 1 && setSlots(s => s.filter((_,j) => j!==i));
+
+  const res = React.useMemo(() => slots.map((sl,i) => {
+    const p = PLANS[sl.plan], c = SC[i];
+    if (mode === "single") {
+      const a = clamp(sl.age,1,100), r = DATA[a]; if (!r) return null;
+      const nw=r[p.offset], oe=r[p.offset+1], oc=r[p.offset+2], diff=oe-nw;
+      return {mode:"single", nw, oe, oc, diff, pct:oe>0?diff/oe*100:0, p, c, i, age:a};
+    } else {
+      const lo=clamp(Math.min(sl.from,sl.to),1,100), hi=clamp(Math.max(sl.from,sl.to),1,100);
+      let tN=0, tE=0, tC=0;
+      for (let a=lo; a<=hi; a++) { const r=DATA[a]; if(r){tN+=r[p.offset];tE+=r[p.offset+1];tC+=r[p.offset+2];} }
+      const diff=tE-tN;
+      return {mode:"range", tN, tE, tC, diff, pct:tE>0?diff/tE*100:0, yrs:hi-lo+1, lo, hi, p, c, i};
+    }
+  }), [slots, mode]);
+
+  const valid     = res.filter(Boolean);
+  const globalMax = Math.max(...valid.flatMap(r => mode==="single"?[r.nw,r.oe]:[r.tN,r.tE]), 1);
+
+  return (
+    <div style={{minHeight:"100vh"}}>
+      {/* HEADER */}
+      <div style={{background:"linear-gradient(160deg,#0c1829,#070f1d)",borderBottom:"1px solid #0f1e35",padding:"15px 18px 13px"}}>
+        <div style={{fontSize:"9px",letterSpacing:"2.5px",color:"#1e3a5f",fontWeight:700,marginBottom:"5px"}}>GREAT EASTERN LIFE · SINGAPORE</div>
+        <h1 style={{fontSize:"18px",fontWeight:700,color:"#e2e8f0",letterSpacing:"-0.3px"}}>Hospital Plan Premium Comparison</h1>
+        <p style={{fontSize:"11px",color:"#1e3a5f",marginTop:"3px"}}>Mix any plan + any age · New vs Old Plan (Eff. 1-Nov-2025) · Up to 4 slots</p>
+      </div>
+
+      <div style={{padding:"16px 18px",maxWidth:"820px",margin:"0 auto"}}>
+
+        {/* MODE TOGGLE */}
+        <div style={{display:"flex",marginBottom:"18px",background:"#0b1829",borderRadius:"10px",padding:"4px",border:"1px solid #0f1e35",width:"fit-content"}}>
+          {[["single","📌 Single Age"],["range","📊 Age Range"]].map(([m,lbl]) => (
+            <button key={m} className="hov" onClick={()=>setMode(m)} style={{
+              padding:"7px 16px",borderRadius:"7px",border:"none",
+              fontWeight:600,fontSize:"13px",fontFamily:"inherit",
+              background:mode===m?"#1d4ed8":"transparent",
+              color:mode===m?"#fff":"#3d5a80",
+            }}>{lbl}</button>
+          ))}
+        </div>
+
+        {/* SLOTS */}
+        <div style={{marginBottom:"20px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+            <span style={{fontSize:"9px",letterSpacing:"2px",color:"#1e3a5f",fontWeight:700}}>COMPARISON SLOTS</span>
+            {slots.length < 4 &&
+              <button className="hov" onClick={addSlot} style={{
+                padding:"5px 12px",borderRadius:"8px",border:"1px dashed #1e3a5f",
+                background:"transparent",color:"#3b82f6",
+                fontSize:"12px",fontWeight:700,fontFamily:"inherit",
+              }}>+ Add Slot</button>
+            }
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:`repeat(${slots.length},1fr)`,gap:"10px"}}>
+            {slots.map((sl,i) => (
+              <SlotCard key={i} idx={i} sl={sl} mode={mode}
+                color={SC[i]} bg={SB[i]}
+                onChange={(k,v)=>upd(i,k,v)}
+                onDel={()=>delSlot(i)}
+                canDel={slots.length>1}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* COMPARISON TABLE */}
+        {valid.length > 0 && <CompTable res={res} mode={mode} />}
+
+        {/* VISUAL BARS */}
+        {valid.length > 0 && (
+          <div style={{background:"#0b1829",borderRadius:"14px",border:"1px solid #0f1e35",padding:"16px",marginBottom:"14px"}}>
+            <div style={{fontSize:"9px",letterSpacing:"2px",color:"#1e3a5f",fontWeight:700,marginBottom:"14px"}}>VISUAL COMPARISON</div>
+            {res.map((r,i) => {
+              if (!r) return null;
+              const nAmt=mode==="single"?r.nw:r.tN, oAmt=mode==="single"?r.oe:r.tE;
+              const lbl=mode==="single"?`Slot ${i+1} · ${r.p.name} · Age ${r.age}`:`Slot ${i+1} · ${r.p.name} · Age ${r.lo}–${r.hi}`;
+              return (
+                <div key={i} style={{marginBottom:i<res.length-1?"16px":0}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"6px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+                      <div style={{width:"8px",height:"8px",borderRadius:"50%",background:SC[i],boxShadow:`0 0 6px ${SC[i]}80`}}/>
+                      <span style={{fontSize:"11px",color:"#64748b"}}>{lbl}</span>
+                    </div>
+                    <span style={{...mono,fontSize:"11px",fontWeight:700,color:r.diff>0?"#22c55e":"#f87171"}}>
+                      {r.diff>0?"-":"+"}S${Math.abs(r.diff).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,",")} ({Math.abs(r.pct).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <Bar label="New" value={nAmt} max={globalMax} color={SC[i]} />
+                  <Bar label="Old" value={oAmt} max={globalMax} color="#ef4444" faded={true} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* FOOTNOTE */}
+        <div style={{padding:"11px 14px",background:"#0b1829",borderRadius:"10px",border:"1px solid #0f1e35"}}>
+          <p style={{fontSize:"10px",color:"#1e3a5f",lineHeight:"1.7"}}>
+            ★ = lowest new premium among slots. Ages 76+ exceed standard bands. Plan P' compared vs Old P Optimum (renewals only). All premiums SGD annual, ANB basis.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════ SLOT CARD ════════════════════════════════════ */
+function SlotCard({idx, sl, mode, color, bg, onChange, onDel, canDel}) {
+  return (
+    <div style={{background:bg,borderRadius:"13px",border:`1.5px solid ${color}45`,padding:"13px 11px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
+          <div style={{width:"9px",height:"9px",borderRadius:"50%",background:color,boxShadow:`0 0 8px ${color}80`}}/>
+          <span style={{fontSize:"9px",letterSpacing:"1.5px",color,fontWeight:700}}>SLOT {idx+1}</span>
+        </div>
+        {canDel && <button className="hov" onClick={onDel} style={{background:"transparent",border:"none",color:"#2d4a6e",fontSize:"18px",lineHeight:1,padding:"0 2px"}}>×</button>}
+      </div>
+
+      <div style={{fontSize:"9px",letterSpacing:"1.2px",color:"#1e3a5f",fontWeight:700,marginBottom:"6px"}}>PLAN</div>
+      <div style={{display:"flex",gap:"4px",marginBottom:"12px",flexWrap:"wrap"}}>
+        {PLANS.map((p,pi) => (
+          <button key={pi} className="hov" onClick={()=>onChange("plan",pi)} style={{
+            padding:"4px 8px",borderRadius:"6px",
+            border:`1px solid ${sl.plan===pi?p.color:"#1a2a42"}`,
+            background:sl.plan===pi?`${p.color}22`:"transparent",
+            color:sl.plan===pi?p.color:"#3d5a80",
+            fontSize:"12px",fontWeight:700,fontFamily:"inherit",
+          }}>{p.label}</button>
+        ))}
+      </div>
+
+      {mode === "single" ? (
+        <div>
+          <div style={{fontSize:"9px",letterSpacing:"1.2px",color:"#1e3a5f",fontWeight:700,marginBottom:"6px"}}>AGE (ANB)</div>
+          <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"7px"}}>
+            <Btn onClick={()=>onChange("age",Math.max(1,sl.age-1))}>−</Btn>
+            <span style={{...mono,fontSize:"26px",fontWeight:700,color,flex:1,textAlign:"center",lineHeight:1}}>{sl.age}</span>
+            <Btn onClick={()=>onChange("age",Math.min(100,sl.age+1))}>+</Btn>
+          </div>
+          <input type="range" min={1} max={100} value={sl.age}
+            onChange={e=>onChange("age",+e.target.value)}
+            style={{accentColor:color}}
+          />
+          {sl.age >= 76 && <div style={{fontSize:"10px",color:"#f59e0b",marginTop:"4px"}}>⚠ Age 76+</div>}
+        </div>
+      ) : (
+        <div>
+          <div style={{fontSize:"9px",letterSpacing:"1.2px",color:"#1e3a5f",fontWeight:700,marginBottom:"7px"}}>AGE RANGE (ANB)</div>
+          <div style={{display:"flex",gap:"5px",alignItems:"flex-end",flexWrap:"wrap"}}>
+            <AgeIn label="From" val={sl.from} color={color} set={v=>onChange("from",v)}/>
+            <span style={{color:"#1e3a5f",fontSize:"11px",paddingBottom:"3px"}}>→</span>
+            <AgeIn label="To"   val={sl.to}   color={color} set={v=>onChange("to",v)}/>
+          </div>
+          <div style={{...mono,fontSize:"12px",color,fontWeight:700,marginTop:"7px"}}>
+            {clamp(Math.max(sl.from,sl.to),1,100) - clamp(Math.min(sl.from,sl.to),1,100) + 1} yrs
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════ TABLE ════════════════════════════════════════ */
+function CompTable({res, mode}) {
+  const valid    = res.filter(Boolean);
+  const newVals  = valid.map(r => mode==="single"?r.nw:r.tN);
+  const minNew   = Math.min(...newVals);
+  const cols     = res.length;
+
+  const rows = mode === "single"
+    ? [
+        {lbl:"Plan",           fn:r=>r.p.name,                                         },
+        {lbl:"Age",            fn:r=>`${r.age}`,              isMono:true              },
+        {lbl:"New Premium",    fn:r=>sgd(r.nw),               isMono:true, isNew:true  },
+        {lbl:"Old (Nov-25)",   fn:r=>sgd(r.oe),               isMono:true, isOld:true  },
+        {lbl:"Old (Pre-hike)", fn:r=>sgd(r.oc),               isMono:true, dim:true    },
+        {lbl:"Annual Savings", fn:r=>sgd(r.diff),             isMono:true, isSav:true  },
+        {lbl:"% Diff",         fn:r=>(r.pct>=0?"-":"+")+Math.abs(r.pct).toFixed(1)+"%", isMono:true, isSav:true},
+      ]
+    : [
+        {lbl:"Plan",            fn:r=>r.p.name,                                         },
+        {lbl:"Age Range",       fn:r=>`${r.lo}–${r.hi}`,      isMono:true              },
+        {lbl:"Years",           fn:r=>`${r.yrs}`,             isMono:true              },
+        {lbl:"New Total",       fn:r=>sgd(r.tN),              isMono:true, isNew:true  },
+        {lbl:"Old Total",       fn:r=>sgd(r.tE),              isMono:true, isOld:true  },
+        {lbl:"Pre-hike Total",  fn:r=>sgd(r.tC),              isMono:true, dim:true    },
+        {lbl:"Total Savings",   fn:r=>sgd(r.diff),            isMono:true, isSav:true  },
+        {lbl:"% Diff",          fn:r=>(r.pct>=0?"-":"+")+Math.abs(r.pct).toFixed(1)+"%", isMono:true, isSav:true},
+      ];
+
+  const gridCols = `120px repeat(${cols},1fr)`;
+
+  return (
+    <div style={{background:"#0b1829",borderRadius:"14px",border:"1px solid #0f1e35",overflow:"hidden",marginBottom:"14px"}}>
+      {/* Slot header */}
+      <div style={{display:"grid",gridTemplateColumns:gridCols,borderBottom:"1px solid #0f1e35",background:"#091220"}}>
+        <div style={{padding:"10px 12px"}}/>
+        {res.map((r,i) => r && (
+          <div key={i} style={{padding:"10px 10px",borderLeft:"1px solid #0f1e35",background:SB[i]}}>
+            <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"2px"}}>
+              <div style={{width:"7px",height:"7px",borderRadius:"50%",background:SC[i]}}/>
+              <span style={{fontSize:"9px",letterSpacing:"1px",color:SC[i],fontWeight:700}}>SLOT {i+1}</span>
+            </div>
+            <div style={{fontSize:"10px",color:"#3d5a80"}}>{r.p.name}</div>
+          </div>
+        ))}
+      </div>
+
+      {rows.map((row,ri) => (
+        <div key={ri} style={{
+          display:"grid",gridTemplateColumns:gridCols,
+          borderBottom:ri<rows.length-1?"1px solid #091220":"none",
+          background:ri%2?"#091220":"transparent",
+        }}>
+          <div style={{padding:"9px 12px",fontSize:"10px",color:"#2d4a6e",fontWeight:600,display:"flex",alignItems:"center"}}>{row.lbl}</div>
+          {res.map((r,i) => {
+            if (!r) return <div key={i} style={{borderLeft:"1px solid #091220"}}/>;
+            const val = row.fn(r);
+            const nv  = mode==="single"?r.nw:r.tN;
+            const isLowest = row.isNew && nv===minNew && newVals.length>1;
+            const color = row.isSav?(r.diff>0?"#22c55e":"#f87171"):
+                          row.isNew?SC[i]: row.isOld?"#ef4444":
+                          row.dim?"#334155":"#94a3b8";
+            return (
+              <div key={i} style={{
+                padding:"9px 10px",borderLeft:"1px solid #091220",
+                fontFamily:row.isMono?"'Roboto Mono',monospace":"inherit",
+                fontSize:row.isNew?"13px":"12px",
+                fontWeight:row.isSav||row.isNew?700:500,
+                color,display:"flex",alignItems:"center",gap:"4px",
+                background:isLowest?"rgba(34,197,94,.07)":"transparent",
+              }}>
+                {isLowest && <span style={{fontSize:"9px",color:"#22c55e"}}>★</span>}
+                {val}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════ SMALL BITS ═══════════════════════════════════ */
+function Bar({label,value,max,color,faded}) {
+  const pct = (value/max*100).toFixed(1);
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"4px"}}>
+      <span style={{fontSize:"10px",color:"#1e3a5f",width:"24px",textAlign:"right"}}>{label}</span>
+      <div style={{flex:1,background:"#0f1e35",borderRadius:"4px",height:"11px",overflow:"hidden"}}>
+        <div style={{
+          width:`${pct}%`,height:"100%",borderRadius:"4px",
+          background:faded?`${color}55`:`linear-gradient(90deg,${color},${color}90)`,
+          transition:"width .4s cubic-bezier(.4,0,.2,1)",
+        }}/>
+      </div>
+      <span style={{...mono,fontSize:"11px",color:faded?"#334155":color,width:"106px",textAlign:"right"}}>{sgd(value)}</span>
+    </div>
+  );
+}
+
+function Btn({onClick,children}) {
+  return (
+    <button className="hov" onClick={onClick} style={{
+      width:"28px",height:"28px",borderRadius:"6px",border:"1px solid #1a2a42",
+      background:"#0f1e35",color:"#3d5a80",fontSize:"16px",
+      display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit",
+    }}>{children}</button>
+  );
+}
+
+function AgeIn({label,val,color,set}) {
+  return (
+    <div>
+      <div style={{fontSize:"9px",letterSpacing:"1px",color:"#1e3a5f",fontWeight:700,marginBottom:"4px"}}>{label}</div>
+      <div style={{display:"flex",gap:"3px",alignItems:"center"}}>
+        <Btn onClick={()=>set(Math.max(1,val-1))}>−</Btn>
+        <input type="number" min={1} max={100} value={val}
+          onChange={e=>set(clamp(+e.target.value,1,100))}
+          style={{
+            width:"48px",padding:"4px 2px",borderRadius:"6px",
+            border:`1.5px solid ${color}50`,background:"#070f1d",
+            color:"#e2e8f0",...mono,fontSize:"17px",fontWeight:700,
+            textAlign:"center",outline:"none",
+          }}/>
+        <Btn onClick={()=>set(Math.min(100,val+1))}>+</Btn>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
