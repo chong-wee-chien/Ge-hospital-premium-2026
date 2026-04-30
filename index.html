@@ -148,7 +148,6 @@ function App() {
   const [mode,  setMode]  = React.useState("single");
   const [slots, setSlots] = React.useState([
     {plan:0, age:35, from:30, to:65},
-    {plan:2, age:35, from:30, to:65},
   ]);
 
   const upd     = (i,k,v) => setSlots(s => s.map((sl,j) => j===i ? {...sl,[k]:v} : sl));
