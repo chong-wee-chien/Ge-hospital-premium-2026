@@ -22,9 +22,7 @@
 <div id="root"></div>
 <script type="text/babel">
 
-/* ── PREMIUM DATA ages 1-100 ─────────────────────────────────────────────────
-   Columns: newP, oldPEff, oldPCur, newPP, oldPPEff, oldPPCur,
-            newA, oldAEff, oldACur, newB, oldBEff, oldBCur              */
+/* ── PREMIUM DATA ages 1-100 ─────────────────────────────────────────────────[cite: 1] */
 const DATA = [
   null,
   [977.73,1686.23,1256.82,422.92,391.31,381.59,118.81,236.53,214.95,75.21,150.42,147.71],
@@ -157,10 +155,12 @@ function App() {
   const res = React.useMemo(() => slots.map((sl,i) => {
     const p = PLANS[sl.plan], c = SC[i];
     if (mode === "single") {
+      if (sl.age === "" || sl.age === null) return null;
       const a = clamp(sl.age,1,100), r = DATA[a]; if (!r) return null;
       const nw=r[p.offset], oe=r[p.offset+1], oc=r[p.offset+2], diff=oe-nw;
       return {mode:"single", nw, oe, oc, diff, pct:oe>0?diff/oe*100:0, p, c, i, age:a};
     } else {
+      if (sl.from === "" || sl.to === "") return null;
       const lo=clamp(Math.min(sl.from,sl.to),1,100), hi=clamp(Math.max(sl.from,sl.to),1,100);
       let tN=0, tE=0, tC=0;
       for (let a=lo; a<=hi; a++) { const r=DATA[a]; if(r){tN+=r[p.offset];tE+=r[p.offset+1];tC+=r[p.offset+2];} }
@@ -220,11 +220,15 @@ function App() {
         </div>
 
         {/* COMPARISON TABLE */}
-        {valid.length > 0 && <CompTable res={res} mode={mode} />}
+        {valid.length > 0 ? <CompTable res={res} mode={mode} /> : (
+            <div style={{background:"#0b1829", borderRadius:"14px", border:"1px dashed #1e3a5f", padding:"40px", textAlign:"center"}}>
+                <p style={{color:"#3d5a80", fontSize:"13px"}}>Enter a valid age above to see comparisons.</p>
+            </div>
+        )}
 
         {/* VISUAL BARS */}
         {valid.length > 0 && (
-          <div style={{background:"#0b1829",borderRadius:"14px",border:"1px solid #0f1e35",padding:"16px",marginBottom:"14px"}}>
+          <div style={{background:"#0b1829",borderRadius:"14px",border:"1px solid #0f1e35",padding:"16px",marginBottom:"14px", marginTop:"14px"}}>
             <div style={{fontSize:"9px",letterSpacing:"2px",color:"#1e3a5f",fontWeight:700,marginBottom:"14px"}}>VISUAL COMPARISON</div>
             {res.map((r,i) => {
               if (!r) return null;
@@ -250,7 +254,7 @@ function App() {
         )}
 
         {/* FOOTNOTE */}
-        <div style={{padding:"11px 14px",background:"#0b1829",borderRadius:"10px",border:"1px solid #0f1e35"}}>
+        <div style={{padding:"11px 14px",background:"#0b1829",borderRadius:"10px",border:"1px solid #0f1e35", marginTop:"14px"}}>
           <p style={{fontSize:"10px",color:"#1e3a5f",lineHeight:"1.7"}}>
             ★ = lowest new premium among slots. Ages 76+ exceed standard bands. Plan P' compared vs Old P Optimum (renewals only). All premiums SGD annual, ANB basis.
           </p>
@@ -262,6 +266,23 @@ function App() {
 
 /* ═══════════════════════════ SLOT CARD ════════════════════════════════════ */
 function SlotCard({idx, sl, mode, color, bg, onChange, onDel, canDel}) {
+    
+  const handleAgeChange = (val) => {
+      if (val === "") {
+          onChange("age", "");
+      } else {
+          onChange("age", clamp(parseInt(val), 1, 100));
+      }
+  };
+
+  const handleRangeChange = (key, val) => {
+      if (val === "") {
+          onChange(key, "");
+      } else {
+          onChange(key, clamp(parseInt(val), 1, 100));
+      }
+  }
+
   return (
     <div style={{background:bg,borderRadius:"13px",border:`1.5px solid ${color}45`,padding:"13px 11px"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
@@ -289,11 +310,30 @@ function SlotCard({idx, sl, mode, color, bg, onChange, onDel, canDel}) {
         <div>
           <div style={{fontSize:"9px",letterSpacing:"1.2px",color:"#1e3a5f",fontWeight:700,marginBottom:"6px"}}>AGE (ANB)</div>
           <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"7px"}}>
-            <Btn onClick={()=>onChange("age",Math.max(1,sl.age-1))}>−</Btn>
-            <span style={{...mono,fontSize:"26px",fontWeight:700,color,flex:1,textAlign:"center",lineHeight:1}}>{sl.age}</span>
-            <Btn onClick={()=>onChange("age",Math.min(100,sl.age+1))}>+</Btn>
+            <Btn onClick={()=>onChange("age",Math.max(1,(sl.age||1)-1))}>−</Btn>
+            
+            <input 
+              type="number" 
+              placeholder="-"
+              value={sl.age} 
+              onChange={e => handleAgeChange(e.target.value)}
+              style={{
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                ...mono,
+                fontSize: "26px",
+                fontWeight: 700,
+                color,
+                flex: 1,
+                textAlign: "center",
+                width: "100%"
+              }} 
+            />
+
+            <Btn onClick={()=>onChange("age",Math.min(100,(sl.age||0)+1))}>+</Btn>
           </div>
-          <input type="range" min={1} max={100} value={sl.age}
+          <input type="range" min={1} max={100} value={sl.age || 1}
             onChange={e=>onChange("age",+e.target.value)}
             style={{accentColor:color}}
           />
@@ -303,12 +343,12 @@ function SlotCard({idx, sl, mode, color, bg, onChange, onDel, canDel}) {
         <div>
           <div style={{fontSize:"9px",letterSpacing:"1.2px",color:"#1e3a5f",fontWeight:700,marginBottom:"7px"}}>AGE RANGE (ANB)</div>
           <div style={{display:"flex",gap:"5px",alignItems:"flex-end",flexWrap:"wrap"}}>
-            <AgeIn label="From" val={sl.from} color={color} set={v=>onChange("from",v)}/>
+            <AgeIn label="From" val={sl.from} color={color} set={v=>handleRangeChange("from",v)}/>
             <span style={{color:"#1e3a5f",fontSize:"11px",paddingBottom:"3px"}}>→</span>
-            <AgeIn label="To"   val={sl.to}   color={color} set={v=>onChange("to",v)}/>
+            <AgeIn label="To"   val={sl.to}   color={color} set={v=>handleRangeChange("to",v)}/>
           </div>
           <div style={{...mono,fontSize:"12px",color,fontWeight:700,marginTop:"7px"}}>
-            {clamp(Math.max(sl.from,sl.to),1,100) - clamp(Math.min(sl.from,sl.to),1,100) + 1} yrs
+            {(sl.from !== "" && sl.to !== "") ? (clamp(Math.max(sl.from,sl.to),1,100) - clamp(Math.min(sl.from,sl.to),1,100) + 1) : 0} yrs
           </div>
         </div>
       )}
@@ -351,13 +391,19 @@ function CompTable({res, mode}) {
       {/* Slot header */}
       <div style={{display:"grid",gridTemplateColumns:gridCols,borderBottom:"1px solid #0f1e35",background:"#091220"}}>
         <div style={{padding:"10px 12px"}}/>
-        {res.map((r,i) => r && (
-          <div key={i} style={{padding:"10px 10px",borderLeft:"1px solid #0f1e35",background:SB[i]}}>
-            <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"2px"}}>
-              <div style={{width:"7px",height:"7px",borderRadius:"50%",background:SC[i]}}/>
-              <span style={{fontSize:"9px",letterSpacing:"1px",color:SC[i],fontWeight:700}}>SLOT {i+1}</span>
-            </div>
-            <div style={{fontSize:"10px",color:"#3d5a80"}}>{r.p.name}</div>
+        {res.map((r,i) => (
+          <div key={i} style={{padding:"10px 10px",borderLeft:"1px solid #0f1e35",background: r ? SB[i] : "transparent"}}>
+            {r ? (
+                <>
+                <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"2px"}}>
+                <div style={{width:"7px",height:"7px",borderRadius:"50%",background:SC[i]}}/>
+                <span style={{fontSize:"9px",letterSpacing:"1px",color:SC[i],fontWeight:700}}>SLOT {i+1}</span>
+                </div>
+                <div style={{fontSize:"10px",color:"#3d5a80"}}>{r.p.name}</div>
+                </>
+            ) : (
+                <div style={{fontSize:"9px", color:"#1e3a5f", fontWeight:700}}>SLOT {i+1} (EMPTY)</div>
+            )}
           </div>
         ))}
       </div>
@@ -370,7 +416,7 @@ function CompTable({res, mode}) {
         }}>
           <div style={{padding:"9px 12px",fontSize:"10px",color:"#2d4a6e",fontWeight:600,display:"flex",alignItems:"center"}}>{row.lbl}</div>
           {res.map((r,i) => {
-            if (!r) return <div key={i} style={{borderLeft:"1px solid #091220"}}/>;
+            if (!r) return <div key={i} style={{borderLeft:"1px solid #091220", padding:"9px 10px", color:"#1a2a42"}}>—</div>;
             const val = row.fn(r);
             const nv  = mode==="single"?r.nw:r.tN;
             const isLowest = row.isNew && nv===minNew && newVals.length>1;
@@ -430,16 +476,16 @@ function AgeIn({label,val,color,set}) {
     <div>
       <div style={{fontSize:"9px",letterSpacing:"1px",color:"#1e3a5f",fontWeight:700,marginBottom:"4px"}}>{label}</div>
       <div style={{display:"flex",gap:"3px",alignItems:"center"}}>
-        <Btn onClick={()=>set(Math.max(1,val-1))}>−</Btn>
-        <input type="number" min={1} max={100} value={val}
-          onChange={e=>set(clamp(+e.target.value,1,100))}
+        <Btn onClick={()=>set(val === "" ? 1 : Math.max(1,val-1))}>−</Btn>
+        <input type="number" placeholder="-" value={val}
+          onChange={e=>set(e.target.value)}
           style={{
             width:"48px",padding:"4px 2px",borderRadius:"6px",
             border:`1.5px solid ${color}50`,background:"#070f1d",
             color:"#e2e8f0",...mono,fontSize:"17px",fontWeight:700,
             textAlign:"center",outline:"none",
           }}/>
-        <Btn onClick={()=>set(Math.min(100,val+1))}>+</Btn>
+        <Btn onClick={()=>set(val === "" ? 1 : Math.min(100,val+1))}>+</Btn>
       </div>
     </div>
   );
